@@ -925,6 +925,49 @@ class CigaretteTrackerApp(tk.Tk):
         plt.show()
         self.deiconify()
 
+    def apply_calendar_heatmap(self):
+        from datetime import date
+        import calendar
+
+        entries = self.data.get("entries", [])
+        if not hasattr(self, "calendar") or not entries:
+            return
+
+        # Build a dict: {date_str: cigs_smoked}
+        entry_map = {e["entry_date"]: e["cigs_smoked"] for e in entries}
+
+        # Find min/max for scaling
+        if entry_map:
+            min_cigs = min(entry_map.values())
+            max_cigs = max(entry_map.values())
+        else:
+            min_cigs = 0
+            max_cigs = 1
+
+        # Helper to get color based on value
+        def get_color(val):
+            # Green for low, yellow for mid, red for high
+            if max_cigs == min_cigs:
+                return "#81c784"  # All same
+            ratio = (val - min_cigs) / (max_cigs - min_cigs)
+            if ratio < 0.33:
+                return "#81c784"  # Green
+            elif ratio < 0.66:
+                return "#ffeb3b"  # Yellow
+            else:
+                return "#e57373"  # Red
+
+        # Remove previous tags
+        for tag in self.calendar._tags:
+            self.calendar.calevent_remove(tag=tag)
+
+        # Apply colors
+        for entry_date, cigs in entry_map.items():
+            y, m, d = map(int, entry_date.split("-"))
+            color = get_color(cigs)
+            self.calendar.calevent_create(date(y, m, d), f"{cigs} cigs", tags=entry_date)
+            self.calendar.tag_config(entry_date, background=color, foreground=DARK_BG)
+
 if __name__ == "__main__":
     app = CigaretteTrackerApp()
     app.mainloop()

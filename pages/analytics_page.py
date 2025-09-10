@@ -15,6 +15,14 @@ def create_analytics_page(app):
 
     tk.Label(analytics_page, text="Analytics", font=("Segoe UI", 15, "bold"), bg=DARK_BG, fg=TEXT_ACCENT).pack(pady=(20, 10))
 
+    # Heatmap button above the calendar
+    ttk.Button(
+        analytics_page,
+        text="Show Heatmap Calendar",
+        style="Rounded.TButton",
+        command=app.apply_calendar_heatmap
+    ).pack(pady=(0, 8))
+
     cal_frame = tk.Frame(analytics_page, bg=DARK_BG)
     cal_frame.pack(pady=(0, 10))
 
