@@ -1,0 +1,36 @@
+{
+  "baselines": [
+    {
+      "avg_cigs_per_day": 25,
+      "pack_size": 20,
+      "pack_price": 29.5,
+      "created_at": "2025-09-08 00:00:00"
+    }
+  ],
+  "entries": [
+    {
+      "entry_date": "2025-09-07",
+      "cigs_smoked": 25,
+      "money_saved": 0.0,
+      "productive_minutes_saved": 0,
+      "source": "manual",
+      "created_at": "2025-09-07 00:00:00"
+    },
+    {
+      "entry_date": "2025-09-08",
+      "cigs_smoked": 22,
+      "money_saved": 4.43,
+      "productive_minutes_saved": 15,
+      "source": "manual",
+      "created_at": "2025-09-08 00:00:00"
+    },
+    {
+      "entry_date": "2025-09-09",
+      "cigs_smoked": 21,
+      "money_saved": 5.9,
+      "productive_minutes_saved": 20,
+      "source": "manual",
+      "created_at": "2025-09-09 00:00:00"
+    }
+  ]
+}
