@@ -6,7 +6,7 @@ from datetime import date
 from tkcalendar import Calendar # type: ignore
 from utils.dialogs import themed_confirm
 import json
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # type: ignore
 from datetime import datetime
 
 from pages.main_menu import create_main_menu
@@ -408,7 +408,7 @@ class CigaretteTrackerApp(tk.Tk):
         self.analytics_label.config(text=msg, fg=TEXT_MAIN)
 
     def show_trends_chart(self, trend_type="daily"):
-        import matplotlib.pyplot as plt
+        import matplotlib.pyplot as plt # type: ignore
         from datetime import datetime
         from collections import defaultdict
 
@@ -780,6 +780,40 @@ class CigaretteTrackerApp(tk.Tk):
             f"Worst Day: {worst_entry['entry_date']} ({worst_entry['cigs_smoked']} cigarettes)"
         )
         self.analytics_label.config(text=msg, fg=TEXT_ACCENT)
+
+    def get_streaks(self):
+        entries = sorted(self.data.get("entries", []), key=lambda e: e["entry_date"])
+        baseline = self.get_current_baseline()
+        if not entries or not baseline:
+            return 0, 0
+
+        current_streak = 0
+        best_streak = 0
+        streak = 0
+
+        for entry in entries:
+            if entry["cigs_smoked"] < baseline.avg_cigs_per_day:
+                streak += 1
+                best_streak = max(best_streak, streak)
+            else:
+                streak = 0
+
+        # Calculate current streak (from last entry backwards)
+        streak = 0
+        for entry in reversed(entries):
+            if entry["cigs_smoked"] < baseline.avg_cigs_per_day:
+                streak += 1
+            else:
+                break
+        current_streak = streak
+
+        return current_streak, best_streak
+
+        if hasattr(self, "streak_label"):
+            current_streak, best_streak = self.get_streaks()
+            self.streak_label.config(
+                text=f"Current streak: {current_streak} days\nBest streak: {best_streak} days"
+            )
 
 if __name__ == "__main__":
     app = CigaretteTrackerApp()

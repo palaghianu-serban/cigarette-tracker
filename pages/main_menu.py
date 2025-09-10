@@ -19,6 +19,17 @@ def create_main_menu(app):
     app.menu_message_label = tk.Label(main_menu, text="", font=("Segoe UI", 11), bg=DARK_BG, fg="#81c784")
     app.menu_message_label.pack(pady=(0, 10))
 
+    current_streak, best_streak = app.get_streaks()
+    streak_label = tk.Label(
+        main_menu,
+        text=f"Current streak: {current_streak} days\nBest streak: {best_streak} days",
+        font=("Segoe UI", 13, "bold"),
+        bg=DARK_BG,
+        fg=TEXT_ACCENT
+    )
+    streak_label.pack(pady=(20, 10))
+    app.streak_label = streak_label
+
     btn_frame = tk.Frame(main_menu, bg=DARK_BG)
     btn_frame.pack(pady=10, side="bottom", fill="x")  # Ensure buttons are at the bottom
 
