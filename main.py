@@ -872,6 +872,52 @@ class CigaretteTrackerApp(tk.Tk):
             "time_pct": pct_change(curr_time, prev_time)
         }
 
+    def show_weekday_distribution(self):
+        import matplotlib.pyplot as plt
+        import calendar
+        from datetime import datetime, date
+
+        entries = self.data.get("entries", [])
+        if not entries:
+            self.analytics_label.config(text="No entries to analyze.", fg="#e57373")
+            return
+
+        # Find the date of the first entry
+        first_entry_date = min(date.fromisoformat(e["entry_date"]) for e in entries)
+
+        # Filter entries from the first entry date onward (effectively all entries)
+        filtered_entries = [
+            e for e in entries
+            if date.fromisoformat(e["entry_date"]) >= first_entry_date
+        ]
+
+        # Prepare weekday sums and counts
+        weekday_sums = [0] * 7  # Monday=0 ... Sunday=6
+        weekday_counts = [0] * 7
+
+        for e in filtered_entries:
+            dt = datetime.strptime(e["entry_date"], "%Y-%m-%d")
+            weekday = dt.weekday()
+            weekday_sums[weekday] += e["cigs_smoked"]
+            weekday_counts[weekday] += 1
+
+        # Calculate averages
+        weekday_avgs = [
+            (weekday_sums[i] / weekday_counts[i]) if weekday_counts[i] > 0 else 0
+            for i in range(7)
+        ]
+
+        days = [calendar.day_name[i] for i in range(7)]
+        plt.figure(figsize=(7, 5))
+        plt.bar(days, weekday_avgs, color="#ffb74d")
+        plt.xlabel("Day of Week")
+        plt.ylabel("Average Cigarettes Smoked")
+        plt.title("Average Cigarettes Smoked by Day of Week\n(from first entry)")
+        plt.tight_layout()
+        self.iconify()
+        plt.show()
+        self.deiconify()
+
 if __name__ == "__main__":
     app = CigaretteTrackerApp()
     app.mainloop()
