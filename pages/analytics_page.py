@@ -54,6 +54,8 @@ def create_analytics_page(app):
 
     # Edit Previous Entry button below the horizontal buttons
     ttk.Button(btn_frame, text="Edit Previous Entry", style="Rounded.TButton", command=app.show_edit_entry_dialog).pack(pady=8)
+    ttk.Button(btn_frame, text="Show Trends", style="Rounded.TButton", command=app.show_trend_selector).pack(pady=8)
+    ttk.Button(btn_frame, text="Show Best/Worst Days", style="Rounded.TButton", command=app.show_best_worst_selector).pack(pady=8)
 
     app.analytics_label = tk.Label(analytics_page, text="", font=("Segoe UI", 12), bg=DARK_BG, fg=TEXT_MAIN, justify="left")
     app.analytics_label.pack(pady=10)

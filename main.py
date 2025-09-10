@@ -6,6 +6,8 @@ from datetime import date
 from tkcalendar import Calendar # type: ignore
 from utils.dialogs import themed_confirm
 import json
+import matplotlib.pyplot as plt
+from datetime import datetime
 
 from pages.main_menu import create_main_menu
 from pages.log_page import create_log_page
@@ -56,7 +58,7 @@ class CigaretteTrackerApp(tk.Tk):
         automated_backup()  # Backup at startup
         self.data = load_data()
         self.title("Cigarette Savings Tracker")
-        self.geometry("650x650")
+        self.geometry("650x750")
         self.configure(bg=DARK_BG)
         self.frames = {}
         self.set_styles()
@@ -405,6 +407,91 @@ class CigaretteTrackerApp(tk.Tk):
         )
         self.analytics_label.config(text=msg, fg=TEXT_MAIN)
 
+    def show_trends_chart(self, trend_type="daily"):
+        import matplotlib.pyplot as plt
+        from datetime import datetime
+        from collections import defaultdict
+
+        entries = self.data.get("entries", [])
+        if not entries:
+            self.analytics_label.config(text="No entries to show trends.", fg="#e57373")
+            return
+
+        entries_sorted = sorted(entries, key=lambda e: e["entry_date"])
+        dates = [datetime.strptime(e["entry_date"], "%Y-%m-%d") for e in entries_sorted]
+        cigs = [e["cigs_smoked"] for e in entries_sorted]
+        money = [e["money_saved"] for e in entries_sorted]
+        minutes = [e["productive_minutes_saved"] for e in entries_sorted]
+
+        if trend_type == "daily":
+            self.iconify()
+            plt.figure(figsize=(10, 5))
+            plt.plot(dates, cigs, label="Cigarettes Smoked", marker="o")
+            plt.plot(dates, money, label="Money Saved (RON)", marker="o")
+            plt.plot(dates, minutes, label="Minutes Saved", marker="o")
+            plt.xlabel("Date")
+            plt.ylabel("Value")
+            plt.title("Daily Trends")
+            plt.legend()
+            plt.tight_layout()
+            plt.show()
+            self.deiconify()
+
+        elif trend_type == "weekly":
+            weekly = defaultdict(lambda: {"cigs": 0, "money": 0, "minutes": 0, "count": 0})
+            for e in entries_sorted:
+                dt = datetime.strptime(e["entry_date"], "%Y-%m-%d")
+                year_week = dt.strftime("%Y-W%U")
+                weekly[year_week]["cigs"] += e["cigs_smoked"]
+                weekly[year_week]["money"] += e["money_saved"]
+                weekly[year_week]["minutes"] += e["productive_minutes_saved"]
+                weekly[year_week]["count"] += 1
+            weeks = sorted(weekly.keys())
+            week_labels = weeks
+            week_cigs = [weekly[w]["cigs"] / weekly[w]["count"] for w in weeks]
+            week_money = [weekly[w]["money"] / weekly[w]["count"] for w in weeks]
+            week_minutes = [weekly[w]["minutes"] / weekly[w]["count"] for w in weeks]
+
+            self.iconify()
+            plt.figure(figsize=(10, 5))
+            plt.plot(week_labels, week_cigs, label="Avg Cigarettes Smoked", marker="o")
+            plt.plot(week_labels, week_money, label="Avg Money Saved (RON)", marker="o")
+            plt.plot(week_labels, week_minutes, label="Avg Minutes Saved", marker="o")
+            plt.xlabel("Week")
+            plt.ylabel("Average Value")
+            plt.title("Weekly Trends")
+            plt.legend()
+            plt.tight_layout()
+            plt.show()
+            self.deiconify()
+
+        elif trend_type == "monthly":
+            monthly = defaultdict(lambda: {"cigs": 0, "money": 0, "minutes": 0, "count": 0})
+            for e in entries_sorted:
+                dt = datetime.strptime(e["entry_date"], "%Y-%m-%d")
+                year_month = dt.strftime("%Y-%m")
+                monthly[year_month]["cigs"] += e["cigs_smoked"]
+                monthly[year_month]["money"] += e["money_saved"]
+                monthly[year_month]["minutes"] += e["productive_minutes_saved"]
+                monthly[year_month]["count"] += 1
+            months = sorted(monthly.keys())
+            month_labels = months
+            month_cigs = [monthly[m]["cigs"] / monthly[m]["count"] for m in months]
+            month_money = [monthly[m]["money"] / monthly[m]["count"] for m in months]
+            month_minutes = [monthly[m]["minutes"] / monthly[m]["count"] for m in months]
+
+            self.iconify()
+            plt.figure(figsize=(10, 5))
+            plt.plot(month_labels, month_cigs, label="Avg Cigarettes Smoked", marker="o")
+            plt.plot(month_labels, month_money, label="Avg Money Saved (RON)", marker="o")
+            plt.plot(month_labels, month_minutes, label="Avg Minutes Saved", marker="o")
+            plt.xlabel("Month")
+            plt.ylabel("Average Value")
+            plt.title("Monthly Trends")
+            plt.legend()
+            plt.tight_layout()
+            plt.show()
+            self.deiconify()
     def toggle_theme(self):
         if not self.winfo_exists():
             return  # App is closed, don't update
@@ -612,6 +699,87 @@ class CigaretteTrackerApp(tk.Tk):
             "Are you sure you want to reset today's entry?",
             do_reset
         )
+
+    def show_trend_selector(self):
+        import tkinter as tk
+        from tkinter import ttk
+
+        dialog = tk.Toplevel(self)
+        dialog.title("Select Trend Type")
+        dialog.configure(bg=DARK_BG)
+        dialog.geometry("300x220")
+        dialog.transient(self)
+        dialog.grab_set()
+
+        # Center the dialog
+        self.update_idletasks()
+        x = self.winfo_x() + (self.winfo_width() // 2) - (300 // 2)
+        y = self.winfo_y() + (self.winfo_height() // 2) - (180 // 2)
+        dialog.geometry(f"+{x}+{y}")
+
+        tk.Label(dialog, text="Choose trend type:", font=("Segoe UI", 12), bg=DARK_BG, fg=TEXT_ACCENT).pack(pady=(20, 10))
+
+        def show_selected_trend(trend_type):
+            dialog.destroy()
+            self.show_trends_chart(trend_type)
+
+        ttk.Button(dialog, text="Daily", style="Rounded.TButton", command=lambda: show_selected_trend("daily")).pack(pady=4)
+        ttk.Button(dialog, text="Weekly", style="Rounded.TButton", command=lambda: show_selected_trend("weekly")).pack(pady=4)
+        ttk.Button(dialog, text="Monthly", style="Rounded.TButton", command=lambda: show_selected_trend("monthly")).pack(pady=4)
+
+    def show_best_worst_selector(self):
+        import tkinter as tk
+        from tkinter import ttk
+
+        dialog = tk.Toplevel(self)
+        dialog.title("Select Best/Worst Period")
+        dialog.configure(bg=DARK_BG)
+        dialog.geometry("300x220")
+        dialog.transient(self)
+        dialog.grab_set()
+
+        # Center the dialog
+        self.update_idletasks()
+        x = self.winfo_x() + (self.winfo_width() // 2) - (300 // 2)
+        y = self.winfo_y() + (self.winfo_height() // 2) - (180 // 2)
+        dialog.geometry(f"+{x}+{y}")
+
+        tk.Label(dialog, text="Choose period:", font=("Segoe UI", 12), bg=DARK_BG, fg=TEXT_ACCENT).pack(pady=(20, 10))
+
+        def show_selected_best_worst(period):
+            dialog.destroy()
+            self.show_best_worst_days(period)
+
+        ttk.Button(dialog, text="All Time", style="Rounded.TButton", command=lambda: show_selected_best_worst("all")).pack(pady=4)
+        ttk.Button(dialog, text="This Month", style="Rounded.TButton", command=lambda: show_selected_best_worst("month")).pack(pady=4)
+        ttk.Button(dialog, text="This Year", style="Rounded.TButton", command=lambda: show_selected_best_worst("year")).pack(pady=4)
+
+    def show_best_worst_days(self, period="all"):
+        from datetime import date
+
+        entries = self.data.get("entries", [])
+        if not entries:
+            self.analytics_label.config(text="No entries to analyze.", fg="#e57373")
+            return
+
+        today = date.today()
+        if period == "month":
+            entries = [e for e in entries if date.fromisoformat(e["entry_date"]).year == today.year and date.fromisoformat(e["entry_date"]).month == today.month]
+        elif period == "year":
+            entries = [e for e in entries if date.fromisoformat(e["entry_date"]).year == today.year]
+
+        if not entries:
+            self.analytics_label.config(text="No entries for selected period.", fg="#e57373")
+            return
+
+        best_entry = min(entries, key=lambda e: e["cigs_smoked"])
+        worst_entry = max(entries, key=lambda e: e["cigs_smoked"])
+
+        msg = (
+            f"Best Day: {best_entry['entry_date']} ({best_entry['cigs_smoked']} cigarettes)\n"
+            f"Worst Day: {worst_entry['entry_date']} ({worst_entry['cigs_smoked']} cigarettes)"
+        )
+        self.analytics_label.config(text=msg, fg=TEXT_ACCENT)
 
 if __name__ == "__main__":
     app = CigaretteTrackerApp()
