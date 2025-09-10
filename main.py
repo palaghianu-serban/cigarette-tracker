@@ -408,11 +408,12 @@ class CigaretteTrackerApp(tk.Tk):
         self.analytics_label.config(text=msg, fg=TEXT_MAIN)
 
     def show_trends_chart(self, trend_type="daily"):
-        import matplotlib.pyplot as plt # type: ignore
+        import matplotlib.pyplot as plt
         from datetime import datetime
         from collections import defaultdict
 
         entries = self.data.get("entries", [])
+        baseline = self.get_current_baseline()
         if not entries:
             self.analytics_label.config(text="No entries to show trends.", fg="#e57373")
             return
@@ -427,6 +428,8 @@ class CigaretteTrackerApp(tk.Tk):
             self.iconify()
             plt.figure(figsize=(10, 5))
             plt.plot(dates, cigs, label="Cigarettes Smoked", marker="o")
+            if baseline:
+                plt.axhline(y=baseline.avg_cigs_per_day, color="red", linestyle="--", label="Baseline")
             plt.plot(dates, money, label="Money Saved (RON)", marker="o")
             plt.plot(dates, minutes, label="Minutes Saved", marker="o")
             plt.xlabel("Date")
@@ -455,6 +458,8 @@ class CigaretteTrackerApp(tk.Tk):
             self.iconify()
             plt.figure(figsize=(10, 5))
             plt.plot(week_labels, week_cigs, label="Avg Cigarettes Smoked", marker="o")
+            if baseline:
+                plt.axhline(y=baseline.avg_cigs_per_day, color="red", linestyle="--", label="Baseline")
             plt.plot(week_labels, week_money, label="Avg Money Saved (RON)", marker="o")
             plt.plot(week_labels, week_minutes, label="Avg Minutes Saved", marker="o")
             plt.xlabel("Week")
@@ -483,6 +488,8 @@ class CigaretteTrackerApp(tk.Tk):
             self.iconify()
             plt.figure(figsize=(10, 5))
             plt.plot(month_labels, month_cigs, label="Avg Cigarettes Smoked", marker="o")
+            if baseline:
+                plt.axhline(y=baseline.avg_cigs_per_day, color="red", linestyle="--", label="Baseline")
             plt.plot(month_labels, month_money, label="Avg Money Saved (RON)", marker="o")
             plt.plot(month_labels, month_minutes, label="Avg Minutes Saved", marker="o")
             plt.xlabel("Month")
@@ -873,7 +880,7 @@ class CigaretteTrackerApp(tk.Tk):
         }
 
     def show_weekday_distribution(self):
-        import matplotlib.pyplot as plt
+        import matplotlib.pyplot as plt # type: ignore
         import calendar
         from datetime import datetime, date
 

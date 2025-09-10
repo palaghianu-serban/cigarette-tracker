@@ -55,17 +55,13 @@ def create_analytics_page(app):
     # Edit Previous Entry button below the horizontal buttons
     ttk.Button(btn_frame, text="Edit Previous Entry", style="Rounded.TButton", command=app.show_edit_entry_dialog).pack(pady=8)
 
-    # Trends and Best/Worst Days
-    ttk.Button(btn_frame, text="Show Trends", style="Rounded.TButton", command=app.show_trend_selector).pack(pady=8)
-    ttk.Button(btn_frame, text="Show Best/Worst Days", style="Rounded.TButton", command=app.show_best_worst_selector).pack(pady=8)
+    # Trends, Best/Worst, Weekday Distribution (side by side)
+    analysis_btns = tk.Frame(btn_frame, bg=DARK_BG)
+    analysis_btns.pack(pady=8)
 
-    # Add this button below the "Show Best/Worst Days" button
-    ttk.Button(
-        btn_frame,
-        text="Show Weekday Distribution",
-        style="Rounded.TButton",
-        command=app.show_weekday_distribution
-    ).pack(pady=8)
+    ttk.Button(analysis_btns, text="Show Trends", style="Rounded.TButton", command=app.show_trend_selector).pack(side="left", padx=4)
+    ttk.Button(analysis_btns, text="Show Best/Worst Days", style="Rounded.TButton", command=app.show_best_worst_selector).pack(side="left", padx=4)
+    ttk.Button(analysis_btns, text="Show Weekday Distribution", style="Rounded.TButton", command=app.show_weekday_distribution).pack(side="left", padx=4)
 
     app.analytics_label = tk.Label(analytics_page, text="", font=("Segoe UI", 12), bg=DARK_BG, fg=TEXT_MAIN, justify="left")
     app.analytics_label.pack(pady=10)
