@@ -815,6 +815,12 @@ class CigaretteTrackerApp(tk.Tk):
                 text=f"Current streak: {current_streak} days\nBest streak: {best_streak} days"
             )
 
+    def get_all_time_totals(self):
+        entries = self.data.get("entries", [])
+        total_money = sum(e.get("money_saved", 0) for e in entries)
+        total_time = sum(e.get("productive_minutes_saved", 0) for e in entries)
+        return round(total_money, 2), int(total_time)
+
 if __name__ == "__main__":
     app = CigaretteTrackerApp()
     app.mainloop()
