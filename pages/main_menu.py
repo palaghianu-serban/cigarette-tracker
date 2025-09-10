@@ -84,6 +84,38 @@ def create_main_menu(app):
     ttk.Button(btn_frame, text="Exit", style="Rounded.TButton", command=app.exit_app).grid(row=4, column=0, padx=10, pady=8, sticky="ew")
     btn_frame.grid_columnconfigure(0, weight=1)
 
+    # Comparison frame
+    comparison_frame = tk.Frame(main_menu, bg=DARK_BG)
+    comparison_frame.pack(fill="x", pady=(0, 10))
+
+    period_var = tk.StringVar(value="week")
+
+    def update_comparison():
+        stats = app.get_period_comparison(period_var.get())
+        comparison_label.config(
+            text=(
+                f"Current: {stats['curr_cigs']} cigs, {stats['curr_money']:.2f} RON, {stats['curr_time']} min\n"
+                f"Previous: {stats['prev_cigs']} cigs, {stats['prev_money']:.2f} RON, {stats['prev_time']} min\n"
+                f"Change: {stats['cigs_pct']} cigs, {stats['money_pct']} RON, {stats['time_pct']} min"
+            )
+        )
+
+    ttk.Radiobutton(comparison_frame, text="Week", variable=period_var, value="week", style="TRadiobutton", command=update_comparison).pack(side="left", padx=5)
+    ttk.Radiobutton(comparison_frame, text="Month", variable=period_var, value="month", style="TRadiobutton", command=update_comparison).pack(side="left", padx=5)
+
+    comparison_label = tk.Label(
+        comparison_frame,
+        text="",
+        font=("Segoe UI", 10),
+        bg=DARK_BG,
+        fg=TEXT_MAIN,
+        justify="left"
+    )
+    comparison_label.pack(side="left", padx=10)
+    app.comparison_label = comparison_label
+
+    update_comparison()
+
     main_menu.pack(fill="both", expand=True)
 
     if hasattr(app, "streak_label") and hasattr(app, "totals_label"):

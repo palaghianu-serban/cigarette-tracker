@@ -821,6 +821,57 @@ class CigaretteTrackerApp(tk.Tk):
         total_time = sum(e.get("productive_minutes_saved", 0) for e in entries)
         return round(total_money, 2), int(total_time)
 
+    def get_period_comparison(self, period="week"):
+        from datetime import date
+
+        entries = self.data.get("entries", [])
+        today = date.today()
+        if period == "month":
+            # Current month
+            current_entries = [e for e in entries if date.fromisoformat(e["entry_date"]).year == today.year and date.fromisoformat(e["entry_date"]).month == today.month]
+            # Previous month
+            prev_month = today.month - 1 if today.month > 1 else 12
+            prev_year = today.year if today.month > 1 else today.year - 1
+            prev_entries = [e for e in entries if date.fromisoformat(e["entry_date"]).year == prev_year and date.fromisoformat(e["entry_date"]).month == prev_month]
+        else:
+            # Current week
+            current_week = today.isocalendar()[1]
+            current_entries = [e for e in entries if date.fromisoformat(e["entry_date"]).isocalendar()[1] == current_week and date.fromisoformat(e["entry_date"]).year == today.year]
+            # Previous week
+            prev_week = current_week - 1 if current_week > 1 else 52
+            prev_year = today.year if current_week > 1 else today.year - 1
+            prev_entries = [e for e in entries if date.fromisoformat(e["entry_date"]).isocalendar()[1] == prev_week and date.fromisoformat(e["entry_date"]).year == prev_year]
+
+        def calc_stats(entry_list):
+            if not entry_list:
+                return 0, 0, 0
+            cigs = sum(e["cigs_smoked"] for e in entry_list)
+            money = sum(e.get("money_saved", 0) for e in entry_list)
+            time = sum(e.get("productive_minutes_saved", 0) for e in entry_list)
+            return cigs, money, time
+
+        curr_cigs, curr_money, curr_time = calc_stats(current_entries)
+        prev_cigs, prev_money, prev_time = calc_stats(prev_entries)
+
+        def pct_change(curr, prev):
+            if prev == 0:
+                return "N/A"
+            change = ((curr - prev) / prev) * 100
+            sign = "+" if change > 0 else ""
+            return f"{sign}{change:.1f}%"
+
+        return {
+            "curr_cigs": curr_cigs,
+            "curr_money": curr_money,
+            "curr_time": curr_time,
+            "prev_cigs": prev_cigs,
+            "prev_money": prev_money,
+            "prev_time": prev_time,
+            "cigs_pct": pct_change(curr_cigs, prev_cigs),
+            "money_pct": pct_change(curr_money, prev_money),
+            "time_pct": pct_change(curr_time, prev_time)
+        }
+
 if __name__ == "__main__":
     app = CigaretteTrackerApp()
     app.mainloop()

@@ -44,7 +44,7 @@ def create_analytics_page(app):
     btn_frame = tk.Frame(analytics_page, bg=DARK_BG)
     btn_frame.pack(pady=10)
 
-    # Horizontal frame for the three analytics buttons
+    # Show Selected buttons (horizontal)
     horizontal_btns = tk.Frame(btn_frame, bg=DARK_BG)
     horizontal_btns.pack()
 
@@ -54,6 +54,8 @@ def create_analytics_page(app):
 
     # Edit Previous Entry button below the horizontal buttons
     ttk.Button(btn_frame, text="Edit Previous Entry", style="Rounded.TButton", command=app.show_edit_entry_dialog).pack(pady=8)
+
+    # Trends and Best/Worst Days
     ttk.Button(btn_frame, text="Show Trends", style="Rounded.TButton", command=app.show_trend_selector).pack(pady=8)
     ttk.Button(btn_frame, text="Show Best/Worst Days", style="Rounded.TButton", command=app.show_best_worst_selector).pack(pady=8)
 
