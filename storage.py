@@ -37,7 +37,9 @@ def migrate_json_to_db():
                 entry_date TEXT UNIQUE,
                 cigs_smoked INTEGER,
                 money_saved REAL,
+                money_spent REAL,
                 productive_minutes_saved INTEGER,
+                productive_minutes_wasted INTEGER,
                 source TEXT,
                 created_at TEXT DEFAULT (datetime('now'))
             )
@@ -51,19 +53,34 @@ def migrate_json_to_db():
         # Insert baselines
         for baseline in data.get("baselines", []):
             c.execute(
-                "INSERT INTO baselines (avg_cigs_per_day, pack_size, pack_price) VALUES (?, ?, ?)",
-                (baseline["avg_cigs_per_day"], baseline["pack_size"], baseline["pack_price"])
+                "INSERT INTO baselines (avg_cigs_per_day, pack_size, pack_price, created_at) VALUES (?, ?, ?, ?)",
+                (
+                    baseline.get("avg_cigs_per_day", 0),
+                    baseline.get("pack_size", 0),
+                    baseline.get("pack_price", 0.0),
+                    baseline.get("created_at", baseline.get("created_at", ""))
+                )
             )
-        # Insert entries
+        # Insert entries, ensure all required fields are present
         for entry in data.get("entries", []):
+            entry.setdefault("cigs_smoked", 0)
+            entry.setdefault("money_saved", 0)
+            entry.setdefault("money_spent", 0)
+            entry.setdefault("productive_minutes_saved", 0)
+            entry.setdefault("productive_minutes_wasted", 0)
+            entry.setdefault("source", "manual")
+            entry.setdefault("created_at", entry.get("created_at", entry["entry_date"] + " 00:00:00"))
             c.execute(
-                "INSERT OR REPLACE INTO entries (entry_date, cigs_smoked, money_saved, productive_minutes_saved, source) VALUES (?, ?, ?, ?, ?)",
+                "INSERT OR REPLACE INTO entries (entry_date, cigs_smoked, money_saved, money_spent, productive_minutes_saved, productive_minutes_wasted, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     entry["entry_date"],
-                    entry.get("cigs_smoked", 0),
-                    entry.get("money_saved", 0),
-                    entry.get("productive_minutes_saved", 0),
-                    entry.get("source", "manual")
+                    entry["cigs_smoked"],
+                    entry["money_saved"],
+                    entry["money_spent"],
+                    entry["productive_minutes_saved"],
+                    entry["productive_minutes_wasted"],
+                    entry["source"],
+                    entry["created_at"]
                 )
             )
         conn.commit()

@@ -408,7 +408,7 @@ class CigaretteTrackerApp(tk.Tk):
         self.analytics_label.config(text=msg, fg=TEXT_MAIN)
 
     def show_trends_chart(self, trend_type="daily"):
-        import matplotlib.pyplot as plt
+        import matplotlib.pyplot as plt # type: ignore
         from datetime import datetime
         from collections import defaultdict
 

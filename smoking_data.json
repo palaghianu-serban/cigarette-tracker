@@ -34,9 +34,26 @@
     },
     {
       "entry_date": "2025-09-10",
-      "cigs_smoked": 18,
-      "money_saved": 10.32,
-      "productive_minutes_saved": 35
+      "cigs_smoked": 20,
+      "money_saved": 7.38,
+      "productive_minutes_saved": 25,
+      "source": "manual"
+    },
+    {
+      "entry_date": "2025-09-11",
+      "cigs_smoked": 16,
+      "money_saved": 13.27,
+      "productive_minutes_saved": 45,
+      "source": "manual",
+      "created_at": "2025-09-11 00:00:00"
+    },
+    {
+      "entry_date": "2025-09-12",
+      "cigs_smoked": 21,
+      "money_saved": 5.9,
+      "productive_minutes_saved": 20,
+      "source": "manual",
+      "created_at": "2025-09-12 00:00:00"
     }
   ]
 }
