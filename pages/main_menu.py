@@ -61,14 +61,14 @@ def create_main_menu(app):
         today_entry_exists = today_entry is not None
 
     if has_baseline:
-        log_btn_text = "Update Today's Cigarettes" if today_entry_exists else "Log Today's Cigarettes"
         app.log_btn = ttk.Button(
             btn_frame,
-            text=log_btn_text,
+            text="Log Today's Cigarettes",  # Initial text, will be updated
             style="Rounded.TButton",
             command=lambda: app.show_frame("log_page")
         )
         app.log_btn.grid(row=0, column=0, padx=10, pady=8, sticky="ew")
+        app.refresh_log_btn_text()  # Set correct text on startup
 
     baseline_btn_text = "Set Initial Baseline" if not has_baseline else "Update Baseline"
     app.baseline_btn = ttk.Button(
@@ -127,3 +127,10 @@ def create_main_menu(app):
         app.totals_label.config(
             text=f"Total money saved: {total_money:.2f} RON\nTotal time saved: {total_time} min"
         )
+
+    ttk.Button(
+        btn_frame,
+        text="Reset Today's Entry",
+        style="Rounded.TButton",
+        command=app.reset_today_entry
+    ).grid(row=1, column=0, padx=10, pady=8, sticky="ew")

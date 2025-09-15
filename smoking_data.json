@@ -14,7 +14,9 @@
       "money_saved": 0.0,
       "productive_minutes_saved": 0,
       "source": "manual",
-      "created_at": "2025-09-07 00:00:00"
+      "created_at": "2025-09-07 00:00:00",
+      "money_spent": 36.88,
+      "productive_minutes_wasted": 125
     },
     {
       "entry_date": "2025-09-08",
@@ -22,7 +24,9 @@
       "money_saved": 4.43,
       "productive_minutes_saved": 15,
       "source": "manual",
-      "created_at": "2025-09-08 00:00:00"
+      "created_at": "2025-09-08 00:00:00",
+      "money_spent": 32.45,
+      "productive_minutes_wasted": 110
     },
     {
       "entry_date": "2025-09-09",
@@ -30,14 +34,19 @@
       "money_saved": 5.9,
       "productive_minutes_saved": 20,
       "source": "manual",
-      "created_at": "2025-09-09 00:00:00"
+      "created_at": "2025-09-09 00:00:00",
+      "money_spent": 30.98,
+      "productive_minutes_wasted": 105
     },
     {
       "entry_date": "2025-09-10",
       "cigs_smoked": 20,
       "money_saved": 7.38,
       "productive_minutes_saved": 25,
-      "source": "manual"
+      "source": "manual",
+      "created_at": "2025-09-10 00:00:00",
+      "money_spent": 29.5,
+      "productive_minutes_wasted": 100
     },
     {
       "entry_date": "2025-09-11",
@@ -45,7 +54,9 @@
       "money_saved": 13.27,
       "productive_minutes_saved": 45,
       "source": "manual",
-      "created_at": "2025-09-11 00:00:00"
+      "created_at": "2025-09-11 00:00:00",
+      "money_spent": 23.6,
+      "productive_minutes_wasted": 80
     },
     {
       "entry_date": "2025-09-12",
@@ -53,7 +64,39 @@
       "money_saved": 5.9,
       "productive_minutes_saved": 20,
       "source": "manual",
-      "created_at": "2025-09-12 00:00:00"
+      "created_at": "2025-09-12 00:00:00",
+      "money_spent": 30.98,
+      "productive_minutes_wasted": 105
+    },
+    {
+      "entry_date": "2025-09-13",
+      "cigs_smoked": 23,
+      "money_saved": 2.95,
+      "productive_minutes_saved": 10,
+      "source": "manual",
+      "created_at": "2025-09-13 00:00:00",
+      "money_spent": 33.92,
+      "productive_minutes_wasted": 115
+    },
+    {
+      "entry_date": "2025-09-14",
+      "cigs_smoked": 40,
+      "money_saved": -22.12,
+      "productive_minutes_saved": -75,
+      "source": "manual",
+      "created_at": "2025-09-14 00:00:00",
+      "money_spent": 59.0,
+      "productive_minutes_wasted": 200
+    },
+    {
+      "entry_date": "2025-09-15",
+      "cigs_smoked": 2,
+      "money_saved": 33.92,
+      "productive_minutes_saved": 115,
+      "source": "manual",
+      "created_at": "2025-09-15 11:52:26",
+      "money_spent": 2.95,
+      "productive_minutes_wasted": 10
     }
   ]
 }

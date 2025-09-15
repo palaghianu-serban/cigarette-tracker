@@ -2,12 +2,11 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from storage import write_json, read_json, migrate_json_to_db, load_data, init_db, automated_backup
 from models import Baseline
-from datetime import date
+from datetime import date, datetime
 from tkcalendar import Calendar # type: ignore
 from utils.dialogs import themed_confirm
 import json
 import matplotlib.pyplot as plt # type: ignore
-from datetime import datetime
 
 from pages.main_menu import create_main_menu
 from pages.log_page import create_log_page
@@ -222,65 +221,56 @@ class CigaretteTrackerApp(tk.Tk):
             cigs = int(self.log_entry.get())
         except Exception:
             messagebox.showerror("Input Error", "Please enter a valid number for cigarettes smoked.")
-            self.log_confirm_label.config(text="Please enter a valid number.", fg=ERROR_COLOR)
+            self.log_confirm_label.config(text="Please enter a valid number.", fg="#e57373")
             return
 
         # Data validation
         if cigs < 0:
-            self.log_confirm_label.config(text="Cigarettes smoked cannot be negative.", fg=ERROR_COLOR)
+            self.log_confirm_label.config(text="Cigarettes smoked cannot be negative.", fg="#e57373")
             return
         if cigs > 200:
-            self.log_confirm_label.config(text="Cigarettes smoked seems to high.", fg=ERROR_COLOR)
+            self.log_confirm_label.config(text="Cigarettes smoked seems too high.", fg="#e57373")
             return
 
         try:
-            # Data for today's entry
-            today_entry = self.find_entry_for_today(self.data.get("entries", []))
-            entry = {
-                "entry_date": date.today().isoformat(),
-                "cigs_smoked": cigs
-            }
-            cigs_saved = baseline.avg_cigs_per_day - cigs
-            packs_smoked = cigs / baseline.pack_size
-            money_spent = packs_smoked * baseline.pack_price
-            productive_minutes_wasted = cigs * 5
-            packs_saved = cigs_saved / baseline.pack_size
-            money_saved = packs_saved * baseline.pack_price
-            productive_minutes_saved = cigs_saved * 5
-            entry["money_saved"] = round(money_saved, 2)
-            entry["productive_minutes_saved"] = productive_minutes_saved
+            today_str = date.today().isoformat()
+            money_saved = round((baseline.avg_cigs_per_day - cigs) / baseline.pack_size * baseline.pack_price, 2)
+            productive_minutes_saved = (baseline.avg_cigs_per_day - cigs) * 5
 
-            # Write to JSON
+            entry = {
+                "entry_date": today_str,
+                "cigs_smoked": cigs,
+                "money_saved": money_saved,
+                "productive_minutes_saved": productive_minutes_saved,
+                "source": "manual",
+                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+
+            # Load existing data
             data = read_json()
             entries = data.setdefault("entries", [])
-            # Update today's entry if exists
+
+            # Update today's entry if exists, else append
             for i, e in enumerate(entries):
-                if e["entry_date"] == entry["entry_date"]:
+                if e["entry_date"] == today_str:
+                    entry["created_at"] = e.get("created_at", entry["created_at"])
+                    entry["source"] = e.get("source", "manual")
                     entries[i] = entry
                     break
             else:
                 entries.append(entry)
-            self.show_progress(write_json, data)
-            self.show_progress(migrate_json_to_db)
+
+            # Save and migrate
+            write_json(data)
+            migrate_json_to_db()
             self.data = load_data()
 
             self.log_confirm_label.config(text="Entry logged successfully!", fg="#81c784")
-            baseline_money_spent = baseline.pack_price * (baseline.avg_cigs_per_day / baseline.pack_size)
-            diff_money = money_spent - baseline_money_spent
-            baseline_minutes_wasted = baseline.avg_cigs_per_day * 5
-            diff_minutes = productive_minutes_wasted - baseline_minutes_wasted
-
-            self.log_results_label.config(
-                text=(
-                    f"Money spent today: {money_spent:.2f} RON ({diff_money:+.2f} RON)\n"
-                    f"Productive time wasted: {productive_minutes_wasted} minutes ({diff_minutes:+d} min)"
-                ),
-                fg=TEXT_ACCENT
-            )
+            self.refresh_log_btn_text()  # Update button text on main menu
             self.after(9000, lambda: self.log_confirm_label.config(text=""))
         except Exception as e:
             messagebox.showerror("Database Error", f"Could not save entry: {e}")
-            self.log_confirm_label.config(text="Error saving entry.", fg=ERROR_COLOR)
+            self.log_confirm_label.config(text="Error saving entry.", fg="#e57373")
 
     def submit_baseline(self):
         try:
@@ -671,41 +661,18 @@ class CigaretteTrackerApp(tk.Tk):
         save_btn.pack(pady=15)
 
     def reset_today_entry(self):
-        def do_reset():
-            today_str = date.today().isoformat()
-            # Remove today's entry from JSON
-            with open(JSON_PATH, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            entries = data.get("entries", [])
-            new_entries = [e for e in entries if e["entry_date"] != today_str]
-            data["entries"] = new_entries
-            with open(JSON_PATH, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2)
-            # Remove today's entry from DB
-            import sqlite3
-            conn = sqlite3.connect("smoking_data.db")
-            c = conn.cursor()
-            c.execute("DELETE FROM entries WHERE entry_date = ?", (today_str,))
-            conn.commit()
-            conn.close()
-            self.data = data
-
-            # Destroy and recreate the log page so it reflects the reset
-            if "log_page" in self.frames:
-                self.frames["log_page"].destroy()
-                del self.frames["log_page"]
-            self.show_progress(create_log_page, self)
-
-            self.show_frame("main_menu")  # Go back to main menu
-            self.menu_message_label.config(text="Today's entry has been reset.", fg="#81c784")
-            self.after(3000, lambda: self.menu_message_label.config(text="", fg="#81c784"))
-
-        themed_confirm(
-            self,
-            "Confirm Reset",
-            "Are you sure you want to reset today's entry?",
-            do_reset
-        )
+        today_str = date.today().isoformat()
+        data = read_json()
+        entries = data.get("entries", [])
+        # Remove today's entry if it exists
+        new_entries = [e for e in entries if e["entry_date"] != today_str]
+        data["entries"] = new_entries
+        write_json(data)
+        migrate_json_to_db()
+        self.data = load_data()
+        self.refresh_log_btn_text()  # Update button text on main menu
+        if hasattr(self, "menu_message_label"):
+            self.menu_message_label.config(text="Today's entry has been reset.", fg="#e57373")
 
     def show_trend_selector(self):
         import tkinter as tk
@@ -967,6 +934,16 @@ class CigaretteTrackerApp(tk.Tk):
             color = get_color(cigs)
             self.calendar.calevent_create(date(y, m, d), f"{cigs} cigs", tags=entry_date)
             self.calendar.tag_config(entry_date, background=color, foreground=DARK_BG)
+
+    def refresh_log_btn_text(self):
+        has_baseline = self.get_current_baseline() is not None
+        today_entry_exists = False
+        if has_baseline:
+            today_entry = self.find_entry_for_today(self.data.get("entries", []))
+            today_entry_exists = today_entry is not None
+        if hasattr(self, "log_btn"):
+            new_text = "Update Today's Cigarettes" if today_entry_exists else "Log Today's Cigarettes"
+            self.log_btn.config(text=new_text)
 
 if __name__ == "__main__":
     app = CigaretteTrackerApp()
