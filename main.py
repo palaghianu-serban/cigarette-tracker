@@ -236,12 +236,16 @@ class CigaretteTrackerApp(tk.Tk):
             today_str = date.today().isoformat()
             money_saved = round((baseline.avg_cigs_per_day - cigs) / baseline.pack_size * baseline.pack_price, 2)
             productive_minutes_saved = (baseline.avg_cigs_per_day - cigs) * 5
+            money_spent = round((cigs / baseline.pack_size) * baseline.pack_price, 2)
+            productive_minutes_wasted = cigs * 5
 
             entry = {
                 "entry_date": today_str,
                 "cigs_smoked": cigs,
                 "money_saved": money_saved,
                 "productive_minutes_saved": productive_minutes_saved,
+                "money_spent": money_spent,
+                "productive_minutes_wasted": productive_minutes_wasted,
                 "source": "manual",
                 "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
@@ -260,13 +264,12 @@ class CigaretteTrackerApp(tk.Tk):
             else:
                 entries.append(entry)
 
-            # Save and migrate
             write_json(data)
             migrate_json_to_db()
             self.data = load_data()
 
             self.log_confirm_label.config(text="Entry logged successfully!", fg="#81c784")
-            self.refresh_log_btn_text()  # Update button text on main menu
+            self.refresh_log_btn_text()
             self.after(9000, lambda: self.log_confirm_label.config(text=""))
         except Exception as e:
             messagebox.showerror("Database Error", f"Could not save entry: {e}")
